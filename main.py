@@ -1,9 +1,7 @@
 import tweepy
-import requests
 
-from datetime import datetime, timezone
 from dotenv import dotenv_values
-from math import sqrt
+from datetime import datetime, timezone
 
 env = dotenv_values(".env")
 
@@ -13,58 +11,14 @@ ACCESS_TOKEN = env.get("ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = env.get("ACCESS_TOKEN_SECRET")
 BEARER_TOKEN = env.get("BEARER_TOKEN")
 
-CLIPPER_ID = "2024-182A"
-JUPITER_ID = "599"
-CENTER = "500@10"
-STEP_SIZE = "1d"
-LAUNCH_DATE = "2024-10-14"
-
-def fetch_horizons_data(body_id, epoch):
-    url = "https://ssd.jpl.nasa.gov/api/horizons.api"
-    params = {
-        "format": "json",
-        "COMMAND": body_id,
-        "MAKE_EPHEM": "YES",
-        "EPHEM_TYPE": "VECTORS",
-        "CENTER": CENTER,
-        "START_TIME": epoch,
-        "STOP_TIME": epoch,
-        "STEP_SIZE": STEP_SIZE,
-        "VEC_TABLE": 2
-    }
-    resp = requests.get(url, params=params, timeout=30)
-    resp.raise_for_status()
-    result = resp.json().get("result", "")
-    lines = result.splitlines()
-    try:
-        start_idx = lines.index("$$SOE")
-        data_line = lines[start_idx + 1].split()
-        x, y, z = map(float, data_line[2:5])
-        return x, y, z
-    except Exception as e:
-        print(f"Error parsing HORIZONS data: {e}")
-        return None
+LAUNCH_DATE = datetime(2024, 10, 14, tzinfo=timezone.utc)
+JUPITER_ARRIVAL = datetime(2030, 4, 11, tzinfo=timezone.utc)
 
 def calculate_progress():
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    clipper_vec = fetch_horizons_data(CLIPPER_ID, now)
-    jupiter_vec = fetch_horizons_data(JUPITER_ID, now)
-    launch_vec = fetch_horizons_data(CLIPPER_ID, LAUNCH_DATE)
-
-    if not all([clipper_vec, jupiter_vec, launch_vec]):
-        return 0.0
-    
-    dx = clipper_vec[0] - jupiter_vec[0]
-    dy = clipper_vec[1] - jupiter_vec[1]
-    dz = clipper_vec[2] - jupiter_vec[2]
-    current_distance = sqrt(dx**2 + dy**2 + dz**2)
-
-    dx0 = launch_vec[0] - jupiter_vec[0]
-    dy0 = launch_vec[1] - jupiter_vec[1]
-    dz0 = launch_vec[2] - jupiter_vec[2]
-    total_distance = sqrt(dx0**2 + dy0**2 + dz0**2)
-
-    progress_pct = max(0.0, min(100.0, 100 * (total_distance - current_distance) / total_distance))
+    now = datetime.now(timezone.utc)
+    total_days = (JUPITER_ARRIVAL - LAUNCH_DATE).days
+    elapsed_days = max(0, (now - LAUNCH_DATE).days)
+    progress_pct = min(100, (elapsed_days / total_days) * 100)
     return progress_pct
 
 def create_progress_bar(percentage, length=20):
