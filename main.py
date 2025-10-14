@@ -29,7 +29,7 @@ def create_progress_bar(percentage, length=20):
 def create_tweet():
     progress = calculate_progress()
     bar = create_progress_bar(progress)
-    return f"{datetime.now().strftime('%Y-%m-%d %H:%M UTC')}:\n{bar} {progress:.2f}%".rstrip("0").rstrip(".")
+    return f"{datetime.now().strftime('%Y-%m-%d')}:\n{bar} {progress:.2f}%".rstrip("0").rstrip(".")
 
 def post_tweet(tweet_text):
     try:
