@@ -8,7 +8,7 @@ This project automatically retrieves and updates trajectory progress daily. You 
 ## Software
 - Python 3.x
 - Tweepy
-- NASA JPL Horizons
+- NASA JPL HORIZONS
 
 ## License
 © 2025 Benjamin Forster. All rights reserved.  
