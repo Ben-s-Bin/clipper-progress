@@ -1,3 +1,4 @@
 tweepy>=4.16.0
 python-dotenv>=1.1.1
 requests>=2.32.5
+urllib3>=2.0
